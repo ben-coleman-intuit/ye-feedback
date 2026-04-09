@@ -1,666 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ben Coleman YE Feedback</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #ffffff;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --slate-100: #f1f5f9;
-      --border: #e2e8f0;
-      --summary-bg: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%);
-      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      --radius: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    .app-header {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .app-header-inner {
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    .app-header h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-
-    .main {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 1.5rem 1.25rem 3rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-
-    .tab {
-      appearance: none;
-      background: none;
-      border: none;
-      padding: 0.75rem 1rem;
-      margin-bottom: -1px;
-      font-family: inherit;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s ease, border-color 0.15s ease;
-    }
-
-    .tab:hover {
-      color: var(--text);
-    }
-
-    .tab[aria-selected="true"] {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-
-    .panel {
-      display: none;
-      animation: fadeIn 0.2s ease;
-    }
-
-    .panel.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .submit-layout {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 42vh;
-      justify-content: flex-start;
-    }
-
-    .submit-instructions {
-      font-size: 0.9rem;
-      color: #475467;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      max-width: 520px;
-      line-height: 1.6;
-    }
-
-    .form-card {
-      width: 100%;
-      max-width: 520px;
-    }
-
-    .field {
-      margin-bottom: 1.25rem;
-    }
-
-    .field label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-    }
-
-    .field input,
-    .field textarea {
-      width: 100%;
-      padding: 0.75rem 0.875rem;
-      font-family: inherit;
-      font-size: 0.9375rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .field input:focus,
-    .field textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-
-    .field textarea {
-      min-height: 180px;
-      resize: vertical;
-      line-height: 1.55;
-    }
-
-    .btn-submit {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.65rem 1.5rem;
-      font-family: inherit;
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: #fff;
-      background: var(--primary);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.15s ease, transform 0.1s ease;
-    }
-
-    .btn-submit:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-submit:active {
-      transform: scale(0.98);
-    }
-
-    .toast {
-      margin-top: 1.25rem;
-      padding: 0.75rem 1rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #166534;
-      background: #dcfce7;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      text-align: center;
-      opacity: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: opacity 0.25s ease, max-height 0.25s ease, margin 0.25s ease, padding 0.25s ease;
-    }
-
-    .toast.visible {
-      opacity: 1;
-      max-height: 4rem;
-      margin-top: 1.25rem;
-      padding: 0.75rem 1rem;
-    }
-
-    .summary-section {
-      background: var(--summary-bg);
-      border: 1px solid #c7d2fe;
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.75rem;
-      box-shadow: var(--shadow);
-    }
-
-    .summary-section h2 {
-      margin: 0 0 0.75rem;
-      font-size: 0.8125rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #4338ca;
-    }
-
-    .themes-hint {
-      margin: 0;
-      font-size: 0.9375rem;
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    .theme-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .theme-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.35rem 0.65rem;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      color: #3730a3;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid #a5b4fc;
-      border-radius: 999px;
-    }
-
-    .theme-tag .count {
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .themes-summary {
-      font-size: 0.875rem;
-      color: var(--text-secondary, #475467);
-      margin-top: 0.75rem;
-      line-height: 1.6;
-      font-style: normal;
-    }
-
-    .feedback-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .feedback-card {
-      background: var(--slate-100);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.125rem 1.25rem;
-      box-shadow: var(--shadow);
-    }
-
-    .feedback-card .name {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--text);
-      margin: 0 0 0.25rem;
-    }
-
-    .feedback-card .time {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin: 0 0 0.75rem;
-    }
-
-    .feedback-card .body {
-      margin: 0;
-      font-size: 0.9375rem;
-      color: var(--text);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 2.5rem 1rem;
-      color: var(--text-muted);
-      font-size: 0.9375rem;
-      background: var(--slate-100);
-      border: 1px dashed var(--border);
-      border-radius: var(--radius);
-    }
-
-    @media (max-width: 480px) {
-      .app-header h1 {
-        font-size: 1.125rem;
-      }
-
-      .tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.65rem 0.5rem;
-        font-size: 0.875rem;
-      }
-
-      .main {
-        padding: 1rem 1rem 2.5rem;
-      }
-
-      .summary-section {
-        padding: 1rem 1.125rem;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoS Feedback — Risk SLT</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 620px; margin: 0 auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 1.5rem; }
+  .card { background: #fff; border: 1px solid #e5e5e3; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+  .prompt-box { background: #f0f6ff; border-left: 3px solid #3b82f6; border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; color: #444; line-height: 1.6; }
+  .rating-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0ee; gap: 12px; }
+  .rating-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .rating-label { font-size: 14px; color: #1a1a1a; flex: 1; }
+  .rating-label span { display: block; font-size: 12px; color: #888; margin-top: 2px; }
+  .stars { display: flex; gap: 5px; flex-shrink: 0; }
+  .star { width: 32px; height: 32px; cursor: pointer; border-radius: 50%; border: 1px solid #ddd; background: #f5f5f3; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ccc; user-select: none; transition: background 0.1s; }
+  .star.active { background: #fde68a; border-color: #f59e0b; color: #92400e; }
+  .star:hover { background: #eee; }
+  textarea { width: 100%; min-height: 90px; resize: vertical; font-size: 14px; font-family: inherit; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafaf9; color: #1a1a1a; }
+  textarea:focus { outline: none; border-color: #3b82f6; }
+  select { width: 100%; font-size: 15px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafaf9; color: #1a1a1a; }
+  select:focus { outline: none; border-color: #3b82f6; }
+  .btn { display: inline-block; padding: 10px 20px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #1a1a1a; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #f5f5f3; }
+  .btn-primary { background: #1d4ed8; border-color: #1d4ed8; color: #fff; font-weight: 500; }
+  .btn-primary:hover { background: #1e40af; }
+  .btn-primary:disabled { background: #93c5fd; border-color: #93c5fd; cursor: not-allowed; }
+  .metric { background: #f5f5f3; border-radius: 8px; padding: 1rem; text-align: center; }
+  .metric-val { font-size: 26px; font-weight: 600; color: #1a1a1a; }
+  .metric-lbl { font-size: 11px; color: #888; margin-top: 4px; }
+  .resp-card { background: #f5f5f3; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #fff; border: 1px solid #e5e5e3; color: #666; margin: 2px; }
+  .ai-out { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.25rem; font-size: 14px; color: #1a1a1a; line-height: 1.8; white-space: pre-wrap; }
+  .error { color: #dc2626; font-size: 12px; margin-top: 5px; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .nav-btn { background: none; border: none; font-size: 13px; color: #888; cursor: pointer; text-align: center; display: block; width: 100%; margin-top: 1.25rem; padding: 0.5rem; font-family: inherit; }
+  .nav-btn:hover { color: #444; }
+  .loading { font-size: 13px; color: #888; padding: 0.5rem 0; }
+</style>
 </head>
 <body>
-  <header class="app-header">
-    <div class="app-header-inner">
-      <h1>Ben Coleman YE Feedback</h1>
+<div class="container">
+  <div id="survey-page" class="page active">
+    <h1>CoS feedback — Risk SLT</h1>
+    <p class="subtitle">Takes ~3 minutes. Your individual response is visible only to your CoS.</p>
+    <div class="card">
+      <div class="section-label">Your name</div>
+      <select id="director-select" onchange="onDirectorChange()">
+        <option value="">— select your name —</option>
+        <option>Coreen Solano</option>
+        <option>Jenna Xu</option>
+        <option>Satyam Misra</option>
+        <option>Bilal Rizvi</option>
+        <option>Diego Sandoval</option>
+        <option>Pradeep Kalla</option>
+        <option>Leslie Boley</option>
+      </select>
+      <div id="name-error" class="error" style="display:none;">Please select your name.</div>
     </div>
-  </header>
-
-  <main class="main">
-    <div class="tabs" role="tablist" aria-label="Feedback sections">
-      <button type="button" class="tab" role="tab" id="tab-submit" aria-selected="true" aria-controls="panel-submit" data-tab="submit">Submit Feedback</button>
-      <button type="button" class="tab" role="tab" id="tab-view" aria-selected="false" aria-controls="panel-view" data-tab="view">View Feedback</button>
+    <div id="prompts-section" style="display:none;" class="card">
+      <div class="section-label">Some context to get you started</div>
+      <p style="font-size:12px;color:#888;margin-bottom:10px;">A few things we've worked on together — use these or go your own way.</p>
+      <div id="prompts-container"></div>
     </div>
-
-    <section id="panel-submit" class="panel active" role="tabpanel" aria-labelledby="tab-submit">
-      <div class="submit-layout">
-        <p class="submit-instructions">Please enter your name, and a brief feedback summary (free text). The system will automatically store your feedback verbatim in the second tab. Thank you!</p>
-        <form class="form-card" id="feedback-form" novalidate>
-          <div class="field">
-            <label for="name">Your Name</label>
-            <input type="text" id="name" name="name" autocomplete="name" placeholder="Jane Doe" required />
-          </div>
-          <div class="field">
-            <label for="feedback">Feedback</label>
-            <textarea id="feedback" name="feedback" placeholder="Share your thoughts, suggestions, or concerns…" required></textarea>
-          </div>
-          <button type="submit" class="btn-submit">Submit</button>
-        </form>
-        <div id="submit-toast" class="toast" role="status" aria-live="polite">Thank you — your feedback has been saved.</div>
+    <div class="card">
+      <div class="section-label">Rate each area — 1 (needs work) to 5 (exceptional)</div>
+      <div id="ratings-container"></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Open comments</div>
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">What's working well? Where could your CoS have more impact?</p>
+      <textarea id="comments" placeholder="Your thoughts here..."></textarea>
+    </div>
+    <div id="submit-error" class="error" style="display:none;margin-bottom:8px;">Please rate all areas before submitting.</div>
+    <button class="btn btn-primary" id="submit-btn" onclick="submitSurvey()" style="width:100%;padding:12px;">Submit feedback</button>
+    <button class="nav-btn" onclick="showPage('dashboard-page')">View dashboard →</button>
+  </div>
+  <div id="thanks-page" class="page">
+    <div style="text-align:center;padding:4rem 1rem;">
+      <div style="font-size:40px;margin-bottom:1rem;color:#16a34a;">✓</div>
+      <h1 style="margin-bottom:8px;">Thank you!</h1>
+      <p style="font-size:14px;color:#888;">Your feedback has been recorded.</p>
+    </div>
+  </div>
+  <div id="dashboard-page" class="page">
+    <div class="dash-header">
+      <div><h1>Feedback dashboard</h1><p style="font-size:12px;color:#888;">Visible to you only</p></div>
+      <button class="btn" onclick="showPage('survey-page')">← Survey</button>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-val" id="d-count">—</div><div class="metric-lbl">Responses</div></div>
+      <div class="metric"><div class="metric-val" id="d-avg">—</div><div class="metric-lbl">Overall avg</div></div>
+      <div class="metric"><div class="metric-val" id="d-top">—</div><div class="metric-lbl">Top area</div></div>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="section-label">Ratings by area</div>
+      <div id="area-breakdown"><p class="loading">Loading...</p></div>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="section-label">Individual responses</div>
+      <div id="responses-list"><p class="loading">Loading...</p></div>
+    </div>
+    <div class="card">
+      <div class="section-label">AI summary for your boss</div>
+      <div id="ai-area">
+        <p style="font-size:13px;color:#888;margin-bottom:10px;">Generate a concise summary you can share upward.</p>
+        <button class="btn btn-primary" onclick="generateSummary()" id="gen-btn">Generate summary →</button>
       </div>
-    </section>
-
-    <section id="panel-view" class="panel" role="tabpanel" aria-labelledby="tab-view" hidden>
-      <div class="summary-section" id="summary-section">
-        <h2>Key Themes</h2>
-        <div id="themes-content"></div>
+      <div id="ai-output" style="display:none;">
+        <div class="ai-out" id="ai-text"></div>
+        <button class="btn" onclick="generateSummary()" style="margin-top:10px;font-size:13px;">Regenerate</button>
       </div>
-      <div id="feedback-list" class="feedback-list"></div>
-    </section>
-  </main>
-
-  <script>
-    (function () {
-      var STORAGE_KEY = "feedback_portal_entries";
-      var STOP_WORDS = new Set([
-        "a", "an", "the", "and", "or", "but", "if", "then", "else", "when", "at", "from", "by", "for", "with",
-        "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "of",
-        "in", "out", "on", "off", "over", "under", "again", "further", "once", "here", "there", "all", "both", "each",
-        "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too",
-        "very", "can", "will", "just", "should", "now", "is", "are", "was", "were", "be", "been", "being", "have", "has",
-        "had", "do", "does", "did", "doing", "would", "could", "may", "might", "must", "shall", "it", "its", "this",
-        "that", "these", "those", "i", "me", "my", "we", "our", "you", "your", "he", "him", "his", "she", "her", "they",
-        "them", "their", "what", "which", "who", "whom", "as", "also", "am", "how", "why", "where", "any", "because",
-        "up", "down", "out", "get", "got", "getting", "go", "going", "went", "make", "made", "like", "just", "really",
-        "think", "thought", "know", "want", "need", "way", "well", "even", "much", "such", "thing", "things", "something",
-        "nothing", "everything", "please", "thanks", "thank", "hi", "hello", "hey", "yes", "no", "ok", "okay", "ben", "etc"
-      ]);
-
-      function loadEntries() {
-        try {
-          var raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return [];
-          var parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-          return [];
-        }
+    </div>
+  </div>
+</div>
+<script>
+  // -------------------------------------------------------
+  // SUPABASE CREDENTIALS
+  const SUPABASE_URL = 'https://kvfdwxitmkshnikgxies.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2ZmR3eGl0bWtzaG5pa2d4aWVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU0MjUsImV4cCI6MjA5MTE3MTQyNX0.GQOqK2SNlo54Am7vjqU-nGct2EIkUU_PfTNLEZX8deQ';
+  // -------------------------------------------------------
+  const AREAS = [
+    { id: 'organizing',   label: 'Organizing the SLT',     desc: 'Meeting cadence, agendas, follow-through on decisions' },
+    { id: 'accelerating', label: 'Accelerating your team', desc: 'Removing friction, surfacing resources, amplifying your work' },
+    { id: 'unblocking',   label: 'Clearing blockages',     desc: 'Escalating issues, resolving cross-functional dependencies' },
+    { id: 'forecasting',  label: 'Risk loss forecasting',  desc: 'Accuracy, timeliness, and usefulness of forecast inputs' },
+    { id: 'expenses',     label: 'Expense management',     desc: 'OPEX visibility, budget discipline, vendor oversight' },
+  ];
+  const PROMPTS = {
+    'Coreen Solano': [
+      'Capacity planning collaboration and reporting',
+      'Headcount planning and smoother working with Finance',
+      'Connection and clarity between Risk Staff and externally to Risk'
+    ],
+    'Jenna Xu': [
+      'Increasing capital risk metrics and loan origination reporting for the leadership group',
+      'Headcount planning and smoother working with Finance',
+      'Connecting teams for better sharing - staff metrics, AI adoption'
+    ],
+    'Satyam Misra': [
+      'Connection and clarity between Risk Staff and externally to Risk',
+      'The FY27 planning process had friction. When challenges surfaced, were they resolved in a way that worked for your team?',
+      "With multiple sub-teams under your remit, how well has the CoS role helped surface your group's needs at the leadership level? Think about dedicated focus in LT meeting, carving out time and visibility for CG Risk."
+    ],
+    'Bilal Rizvi': [
+      'Connection and clarity between Risk Staff and externally to Risk - eg. Services Check-In, risk efficiency storytelling',
+      'The FY27 planning process had friction. When challenges surfaced, were they resolved in a way that worked for your team?',
+      'Headcount planning and smoother working with Finance'
+    ],
+    'Diego Sandoval': [
+      'FY27 combined risk planning and strategy — how effective was the facilitation support in pulling it together?',
+      'Connecting teams for better sharing - staff metrics, AI adoption',
+      'Connection and clarity between Risk Staff and externally to Risk - eg. Services Check-In, risk efficiency storytelling'
+    ],
+    'Pradeep Kalla': [
+      'IBCC fraud defense work and the case for account-stage risk expansion — how well did coordination support move that forward through the right channels?',
+      'Connecting teams for better sharing - staff metrics, AI adoption',
+      'FY27 risk planning offsite and director planning sessions — did they feel well-organized and worth the time?'
+    ],
+    'Leslie Boley': [
+      'Monthly Loss Review migration to the new AI-powered format — how smooth was the transition from a coordination standpoint?',
+      'ARC Money KPIs deck and FY27 priority planning tracker — were cross-functional dependencies managed well?',
+      'Connecting teams for better sharing - especially following your feedback on better transparency'
+    ]
+  };
+  let currentRatings = {};
+  async function supabaseFetch(path, options = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': options.prefer || '',
+        ...(options.headers || {})
       }
-
-      function saveEntries(entries) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-      }
-
-      function formatTimestamp(iso) {
-        try {
-          var d = new Date(iso);
-          if (isNaN(d.getTime())) return iso;
-          return d.toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short"
-          });
-        } catch (e) {
-          return iso;
-        }
-      }
-
-      function tokenize(text) {
-        return text
-          .toLowerCase()
-          .replace(/[^a-z0-9\s'-]/g, " ")
-          .split(/\s+/)
-          .filter(function (w) {
-            return w.length > 2 && !STOP_WORDS.has(w) && !/^\d+$/.test(w);
-          });
-      }
-
-      function computeThemes(entries) {
-        var nameWords = new Set();
-        entries.forEach(function (entry) {
-          tokenize(entry.name || "").forEach(function (w) { nameWords.add(w); });
-        });
-        var counts = {};
-        entries.forEach(function (entry) {
-          tokenize(entry.feedback || "").forEach(function (word) {
-            if (!nameWords.has(word)) {
-              counts[word] = (counts[word] || 0) + 1;
-            }
-          });
-        });
-        return Object.keys(counts)
-          .map(function (k) {
-            return { word: k, count: counts[k] };
-          })
-          .sort(function (a, b) {
-            if (b.count !== a.count) return b.count - a.count;
-            return a.word.localeCompare(b.word);
-          });
-      }
-
-      function renderThemes(container, entries) {
-        container.innerHTML = "";
-        if (entries.length < 3) {
-          var p = document.createElement("p");
-          p.className = "themes-hint";
-          p.textContent = "Submit more feedback to see themes";
-          container.appendChild(p);
-          return;
-        }
-        var themes = computeThemes(entries);
-        if (themes.length === 0) {
-          var empty = document.createElement("p");
-          empty.className = "themes-hint";
-          empty.textContent = "No recurring words yet — try longer messages.";
-          container.appendChild(empty);
-          return;
-        }
-        var topCount = themes.length < 5 ? themes.length : Math.min(8, themes.length);
-        var wrap = document.createElement("div");
-        wrap.className = "theme-tags";
-        for (var i = 0; i < topCount; i++) {
-          var t = themes[i];
-          var tag = document.createElement("span");
-          tag.className = "theme-tag";
-          var label = t.word.charAt(0).toUpperCase() + t.word.slice(1);
-          tag.appendChild(document.createTextNode(label + " "));
-          var cnt = document.createElement("span");
-          cnt.className = "count";
-          cnt.textContent = String(t.count);
-          tag.appendChild(cnt);
-          wrap.appendChild(tag);
-        }
-        container.appendChild(wrap);
-        // Build a natural summary from actual feedback text
-        var summaryEl = document.createElement("p");
-        summaryEl.className = "themes-summary";
-
-        // Helper: find the best sentence from feedback containing a keyword
-        function findSentence(keyword, entries) {
-          for (var i = 0; i < entries.length; i++) {
-            var text = entries[i].feedback || "";
-            // Split into sentences
-            var sentences = text.split(/[.!?]+/).filter(function(s) { return s.trim().length > 10; });
-            for (var j = 0; j < sentences.length; j++) {
-              if (sentences[j].toLowerCase().indexOf(keyword) !== -1) {
-                return sentences[j].trim();
-              }
-            }
-          }
-          return null;
-        }
-
-        var n = entries.length;
-        var topWords = themes.slice(0, 3).map(function(t) { return t.word; });
-        var snippets = [];
-        var usedEntries = new Set();
-
-        // Collect unique relevant snippets
-        topWords.forEach(function(word) {
-          for (var i = 0; i < entries.length; i++) {
-            if (usedEntries.has(i)) continue;
-            var text = entries[i].feedback || "";
-            var sentences = text.split(/[.!?\n]+/).filter(function(s) { return s.trim().length > 15; });
-            for (var j = 0; j < sentences.length; j++) {
-              if (sentences[j].toLowerCase().indexOf(word) !== -1) {
-                snippets.push(sentences[j].trim());
-                usedEntries.add(i);
-                break;
-              }
-            }
-            if (snippets.length >= 3) break;
-          }
-        });
-
-        // If we couldn't find keyword-matching sentences, take the first sentence from each entry
-        if (snippets.length === 0) {
-          for (var i = 0; i < Math.min(3, entries.length); i++) {
-            var first = (entries[i].feedback || "").split(/[.!?\n]+/)[0];
-            if (first && first.trim().length > 10) snippets.push(first.trim());
-          }
-        }
-
-        // Build the summary
-        var summaryText;
-        if (snippets.length === 0) {
-          summaryText = "Feedback has been received from " + n + " respondents covering a range of topics.";
-        } else if (snippets.length === 1) {
-          summaryText = "Across " + n + " responses, a key theme is that " + snippets[0].charAt(0).toLowerCase() + snippets[0].slice(1) + ".";
-        } else {
-          summaryText = "Across " + n + " responses, contributors noted that " +
-            snippets[0].charAt(0).toLowerCase() + snippets[0].slice(1) +
-            ". Additionally, feedback highlighted that " +
-            snippets[1].charAt(0).toLowerCase() + snippets[1].slice(1) + ".";
-          if (snippets.length >= 3) {
-            summaryText += " Several respondents also mentioned that " +
-              snippets[2].charAt(0).toLowerCase() + snippets[2].slice(1) + ".";
-          }
-        }
-
-        summaryEl.textContent = summaryText;
-        container.appendChild(summaryEl);
-      }
-
-      function renderList(container, entries) {
-        container.innerHTML = "";
-        if (entries.length === 0) {
-          var empty = document.createElement("div");
-          empty.className = "empty-state";
-          empty.textContent = "No feedback submitted yet. Switch to Submit Feedback to add the first entry.";
-          container.appendChild(empty);
-          return;
-        }
-        var sorted = entries.slice().sort(function (a, b) {
-          return new Date(b.timestamp) - new Date(a.timestamp);
-        });
-        sorted.forEach(function (entry) {
-          var card = document.createElement("article");
-          card.className = "feedback-card";
-          var nameEl = document.createElement("p");
-          nameEl.className = "name";
-          nameEl.textContent = entry.name || "Anonymous";
-          var timeEl = document.createElement("p");
-          timeEl.className = "time";
-          timeEl.textContent = formatTimestamp(entry.timestamp);
-          var bodyEl = document.createElement("p");
-          bodyEl.className = "body";
-          bodyEl.textContent = entry.feedback || "";
-          card.appendChild(nameEl);
-          card.appendChild(timeEl);
-          card.appendChild(bodyEl);
-          container.appendChild(card);
-        });
-      }
-
-      function refreshView() {
-        var entries = loadEntries();
-        var themesEl = document.getElementById("themes-content");
-        var listEl = document.getElementById("feedback-list");
-        renderThemes(themesEl, entries);
-        renderList(listEl, entries);
-      }
-
-      var form = document.getElementById("feedback-form");
-      var toast = document.getElementById("submit-toast");
-      var toastTimer;
-
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        var nameInput = document.getElementById("name");
-        var feedbackInput = document.getElementById("feedback");
-        var name = nameInput.value.trim();
-        var feedback = feedbackInput.value.trim();
-        if (!name || !feedback) return;
-
-        var entries = loadEntries();
-        entries.push({
-          name: name,
-          feedback: feedback,
-          timestamp: new Date().toISOString()
-        });
-        saveEntries(entries);
-
-        form.reset();
-        clearTimeout(toastTimer);
-        toast.classList.add("visible");
-        toastTimer = setTimeout(function () {
-          toast.classList.remove("visible");
-        }, 3200);
-
-        refreshView();
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+  function initRatings() {
+    const c = document.getElementById('ratings-container');
+    c.innerHTML = '';
+    AREAS.forEach(area => {
+      currentRatings[area.id] = 0;
+      const row = document.createElement('div');
+      row.className = 'rating-row';
+      row.innerHTML = `<div class="rating-label">${area.label}<span>${area.desc}</span></div>
+        <div class="stars" id="stars-${area.id}">${[1,2,3,4,5].map(i =>
+          `<div class="star" data-val="${i}" onclick="setRating('${area.id}',${i})">★</div>`).join('')}</div>`;
+      c.appendChild(row);
+    });
+  }
+  function setRating(id, val) {
+    currentRatings[id] = val;
+    document.querySelectorAll(`#stars-${id} .star`).forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+    });
+  }
+  function onDirectorChange() {
+    const name = document.getElementById('director-select').value;
+    const section = document.getElementById('prompts-section');
+    const container = document.getElementById('prompts-container');
+    if (name && PROMPTS[name]) {
+      container.innerHTML = PROMPTS[name].map(p => `<div class="prompt-box">${p}</div>`).join('');
+      section.style.display = 'block';
+    } else {
+      section.style.display = 'none';
+    }
+  }
+  async function submitSurvey() {
+    const name = document.getElementById('director-select').value;
+    if (!name) { document.getElementById('name-error').style.display = 'block'; return; }
+    document.getElementById('name-error').style.display = 'none';
+    if (AREAS.some(a => !currentRatings[a.id])) { document.getElementById('submit-error').style.display = 'block'; return; }
+    document.getElementById('submit-error').style.display = 'none';
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = 'Submitting...'; btn.disabled = true;
+    try {
+      await supabaseFetch('responses', {
+        method: 'POST',
+        prefer: 'return=minimal',
+        body: JSON.stringify({ name, ratings: currentRatings, comments: document.getElementById('comments').value.trim() })
       });
-
-      var tabs = document.querySelectorAll(".tab");
-      var panels = {
-        submit: document.getElementById("panel-submit"),
-        view: document.getElementById("panel-view")
-      };
-
-      function setTab(id) {
-        tabs.forEach(function (btn) {
-          var on = btn.getAttribute("data-tab") === id;
-          btn.setAttribute("aria-selected", on ? "true" : "false");
-        });
-        Object.keys(panels).forEach(function (key) {
-          var p = panels[key];
-          var active = key === id;
-          p.classList.toggle("active", active);
-          p.hidden = !active;
-        });
-        if (id === "view") refreshView();
-      }
-
-      tabs.forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          setTab(btn.getAttribute("data-tab"));
-        });
+      showPage('thanks-page');
+    } catch(e) {
+      alert('Something went wrong. Please try again.\n\n' + e.message);
+      btn.textContent = 'Submit feedback'; btn.disabled = false;
+    }
+  }
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (id === 'dashboard-page') renderDashboard();
+  }
+  async function renderDashboard() {
+    ['area-breakdown','responses-list'].forEach(id => {
+      document.getElementById(id).innerHTML = '<p class="loading">Loading...</p>';
+    });
+    ['d-count','d-avg','d-top'].forEach(id => document.getElementById(id).textContent = '—');
+    let responses;
+    try {
+      responses = await supabaseFetch('responses?select=*&order=submitted_at.desc');
+    } catch(e) {
+      document.getElementById('responses-list').innerHTML = `<p class="error">Failed to load: ${e.message}</p>`;
+      return;
+    }
+    document.getElementById('d-count').textContent = responses.length;
+    if (!responses.length) {
+      ['area-breakdown','responses-list'].forEach(id => {
+        document.getElementById(id).innerHTML = '<p style="font-size:13px;color:#888">No responses yet.</p>';
       });
-
-      refreshView();
-    })();
-  </script>
+      return;
+    }
+    const totals = {};
+    AREAS.forEach(a => totals[a.id] = 0);
+    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
+    const avgs = {};
+    AREAS.forEach(a => avgs[a.id] = totals[a.id] / responses.length);
+    const overall = Object.values(avgs).reduce((s,v) => s+v, 0) / AREAS.length;
+    document.getElementById('d-avg').textContent = overall.toFixed(1) + ' / 5';
+    const top = AREAS.reduce((b,a) => avgs[a.id] > avgs[b.id] ? a : b, AREAS[0]);
+    document.getElementById('d-top').textContent = top.label.split(' ').slice(0,2).join(' ');
+    document.getElementById('area-breakdown').innerHTML = AREAS.map(a => {
+      const avg = avgs[a.id]; const pct = (avg/5)*100;
+      const col = avg >= 4 ? '#16a34a' : avg >= 3 ? '#d97706' : '#dc2626';
+      return `<div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+          <span>${a.label}</span><span style="font-weight:600">${avg.toFixed(1)}</span>
+        </div>
+        <div style="height:6px;background:#f0f0ee;border-radius:99px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;"></div>
+        </div></div>`;
+    }).join('');
+    document.getElementById('responses-list').innerHTML = responses.map(r => {
+      const date = new Date(r.submitted_at).toLocaleDateString();
+      return `<div class="resp-card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:14px;font-weight:600">${r.name}</span>
+          <span style="font-size:12px;color:#888">${date}</span>
+        </div>
+        <div style="margin-bottom:${r.comments?'8px':'0'}">${AREAS.map(a=>`<span class="tag">${a.label.split(' ').slice(0,2).join(' ')}: ${r.ratings[a.id]||'—'}/5</span>`).join('')}</div>
+        ${r.comments?`<p style="font-size:13px;color:#666;border-top:1px solid #e5e5e3;padding-top:8px;margin-top:0">"${r.comments}"</p>`:''}
+      </div>`;
+    }).join('');
+  }
+  async function generateSummary() {
+    const btn = document.getElementById('gen-btn');
+    btn.textContent = 'Generating...'; btn.disabled = true;
+    let responses;
+    try { responses = await supabaseFetch('responses?select=*'); }
+    catch(e) { alert('Could not load responses: ' + e.message); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
+    if (!responses.length) { alert('No responses yet.'); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
+    const totals = {};
+    AREAS.forEach(a => totals[a.id] = 0);
+    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
+    const avgs = {};
+    AREAS.forEach(a => avgs[a.id] = (totals[a.id]/responses.length).toFixed(1));
+    const comments = responses.filter(r => r.comments).map(r => `- ${r.name}: "${r.comments}"`).join('\n');
+    const prompt = `You are summarizing Risk SLT peer feedback on a Chief of Staff at Intuit. Write a concise 3-4 sentence summary for her manager. Be specific, use the data, mention standout strengths and any areas to watch. Use third person ("she/her").\n\nResponses: ${responses.length} of 7 directors\nAverage ratings (out of 5):\n${AREAS.map(a=>`- ${a.label}: ${avgs[a.id]}`).join('\n')}\n\nComments:\n${comments||'None provided.'}\n\nKeep it under 120 words. Professional but warm tone.`;
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await res.json();
+      const text = data.content?.find(b => b.type==='text')?.text || 'Could not generate summary.';
+      document.getElementById('ai-text').textContent = text;
+      document.getElementById('ai-output').style.display = 'block';
+      document.getElementById('ai-area').querySelector('p').style.display = 'none';
+      document.getElementById('gen-btn').style.display = 'none';
+    } catch(e) { alert('Error generating summary. Please try again.'); }
+    btn.textContent = 'Generate summary →'; btn.disabled = false;
+  }
+  initRatings();
+</script>
 </body>
 </html>
