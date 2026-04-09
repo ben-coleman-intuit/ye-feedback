@@ -32,18 +32,7 @@
   .btn-primary { background: #1d4ed8; border-color: #1d4ed8; color: #fff; font-weight: 500; }
   .btn-primary:hover { background: #1e40af; }
   .btn-primary:disabled { background: #93c5fd; border-color: #93c5fd; cursor: not-allowed; }
-  .metric { background: #f5f5f3; border-radius: 8px; padding: 1rem; text-align: center; }
-  .metric-val { font-size: 26px; font-weight: 600; color: #1a1a1a; }
-  .metric-lbl { font-size: 11px; color: #888; margin-top: 4px; }
-  .resp-card { background: #f5f5f3; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
-  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #fff; border: 1px solid #e5e5e3; color: #666; margin: 2px; }
-  .ai-out { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.25rem; font-size: 14px; color: #1a1a1a; line-height: 1.8; white-space: pre-wrap; }
   .error { color: #dc2626; font-size: 12px; margin-top: 5px; }
-  .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-  .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-  .nav-btn { background: none; border: none; font-size: 13px; color: #888; cursor: pointer; text-align: center; display: block; width: 100%; margin-top: 1.25rem; padding: 0.5rem; font-family: inherit; }
-  .nav-btn:hover { color: #444; }
-  .loading { font-size: 13px; color: #888; padding: 0.5rem 0; }
 </style>
 </head>
 <body>
@@ -81,43 +70,12 @@
     </div>
     <div id="submit-error" class="error" style="display:none;margin-bottom:8px;">Please rate all areas before submitting.</div>
     <button class="btn btn-primary" id="submit-btn" onclick="submitSurvey()" style="width:100%;padding:12px;">Submit feedback</button>
-    <button class="nav-btn" onclick="showPage('dashboard-page')">View dashboard →</button>
   </div>
   <div id="thanks-page" class="page">
     <div style="text-align:center;padding:4rem 1rem;">
       <div style="font-size:40px;margin-bottom:1rem;color:#16a34a;">✓</div>
       <h1 style="margin-bottom:8px;">Thank you!</h1>
       <p style="font-size:14px;color:#888;">Your feedback has been recorded.</p>
-    </div>
-  </div>
-  <div id="dashboard-page" class="page">
-    <div class="dash-header">
-      <div><h1>Feedback dashboard</h1><p style="font-size:12px;color:#888;">Visible to you only</p></div>
-      <button class="btn" onclick="showPage('survey-page')">← Survey</button>
-    </div>
-    <div class="metrics-grid">
-      <div class="metric"><div class="metric-val" id="d-count">—</div><div class="metric-lbl">Responses</div></div>
-      <div class="metric"><div class="metric-val" id="d-avg">—</div><div class="metric-lbl">Overall avg</div></div>
-      <div class="metric"><div class="metric-val" id="d-top">—</div><div class="metric-lbl">Top area</div></div>
-    </div>
-    <div class="card" style="margin-bottom:1rem;">
-      <div class="section-label">Ratings by area</div>
-      <div id="area-breakdown"><p class="loading">Loading...</p></div>
-    </div>
-    <div class="card" style="margin-bottom:1rem;">
-      <div class="section-label">Individual responses</div>
-      <div id="responses-list"><p class="loading">Loading...</p></div>
-    </div>
-    <div class="card">
-      <div class="section-label">AI summary for your boss</div>
-      <div id="ai-area">
-        <p style="font-size:13px;color:#888;margin-bottom:10px;">Generate a concise summary you can share upward.</p>
-        <button class="btn btn-primary" onclick="generateSummary()" id="gen-btn">Generate summary →</button>
-      </div>
-      <div id="ai-output" style="display:none;">
-        <div class="ai-out" id="ai-text"></div>
-        <button class="btn" onclick="generateSummary()" style="margin-top:10px;font-size:13px;">Regenerate</button>
-      </div>
     </div>
   </div>
 </div>
@@ -240,87 +198,6 @@
   function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    if (id === 'dashboard-page') renderDashboard();
-  }
-  async function renderDashboard() {
-    ['area-breakdown','responses-list'].forEach(id => {
-      document.getElementById(id).innerHTML = '<p class="loading">Loading...</p>';
-    });
-    ['d-count','d-avg','d-top'].forEach(id => document.getElementById(id).textContent = '—');
-    let responses;
-    try {
-      responses = await supabaseFetch('responses?select=*&order=submitted_at.desc');
-    } catch(e) {
-      document.getElementById('responses-list').innerHTML = `<p class="error">Failed to load: ${e.message}</p>`;
-      return;
-    }
-    document.getElementById('d-count').textContent = responses.length;
-    if (!responses.length) {
-      ['area-breakdown','responses-list'].forEach(id => {
-        document.getElementById(id).innerHTML = '<p style="font-size:13px;color:#888">No responses yet.</p>';
-      });
-      return;
-    }
-    const totals = {};
-    AREAS.forEach(a => totals[a.id] = 0);
-    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
-    const avgs = {};
-    AREAS.forEach(a => avgs[a.id] = totals[a.id] / responses.length);
-    const overall = Object.values(avgs).reduce((s,v) => s+v, 0) / AREAS.length;
-    document.getElementById('d-avg').textContent = overall.toFixed(1) + ' / 5';
-    const top = AREAS.reduce((b,a) => avgs[a.id] > avgs[b.id] ? a : b, AREAS[0]);
-    document.getElementById('d-top').textContent = top.label.split(' ').slice(0,2).join(' ');
-    document.getElementById('area-breakdown').innerHTML = AREAS.map(a => {
-      const avg = avgs[a.id]; const pct = (avg/5)*100;
-      const col = avg >= 4 ? '#16a34a' : avg >= 3 ? '#d97706' : '#dc2626';
-      return `<div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-          <span>${a.label}</span><span style="font-weight:600">${avg.toFixed(1)}</span>
-        </div>
-        <div style="height:6px;background:#f0f0ee;border-radius:99px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;"></div>
-        </div></div>`;
-    }).join('');
-    document.getElementById('responses-list').innerHTML = responses.map(r => {
-      const date = new Date(r.submitted_at).toLocaleDateString();
-      return `<div class="resp-card">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <span style="font-size:14px;font-weight:600">${r.name}</span>
-          <span style="font-size:12px;color:#888">${date}</span>
-        </div>
-        <div style="margin-bottom:${r.comments?'8px':'0'}">${AREAS.map(a=>`<span class="tag">${a.label.split(' ').slice(0,2).join(' ')}: ${r.ratings[a.id]||'—'}/5</span>`).join('')}</div>
-        ${r.comments?`<p style="font-size:13px;color:#666;border-top:1px solid #e5e5e3;padding-top:8px;margin-top:0">"${r.comments}"</p>`:''}
-      </div>`;
-    }).join('');
-  }
-  async function generateSummary() {
-    const btn = document.getElementById('gen-btn');
-    btn.textContent = 'Generating...'; btn.disabled = true;
-    let responses;
-    try { responses = await supabaseFetch('responses?select=*'); }
-    catch(e) { alert('Could not load responses: ' + e.message); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
-    if (!responses.length) { alert('No responses yet.'); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
-    const totals = {};
-    AREAS.forEach(a => totals[a.id] = 0);
-    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
-    const avgs = {};
-    AREAS.forEach(a => avgs[a.id] = (totals[a.id]/responses.length).toFixed(1));
-    const comments = responses.filter(r => r.comments).map(r => `- ${r.name}: "${r.comments}"`).join('\n');
-    const prompt = `You are summarizing Risk SLT peer feedback on a Chief of Staff at Intuit. Write a concise 3-4 sentence summary for her manager. Be specific, use the data, mention standout strengths and any areas to watch. Use third person ("she/her").\n\nResponses: ${responses.length} of 7 directors\nAverage ratings (out of 5):\n${AREAS.map(a=>`- ${a.label}: ${avgs[a.id]}`).join('\n')}\n\nComments:\n${comments||'None provided.'}\n\nKeep it under 120 words. Professional but warm tone.`;
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await res.json();
-      const text = data.content?.find(b => b.type==='text')?.text || 'Could not generate summary.';
-      document.getElementById('ai-text').textContent = text;
-      document.getElementById('ai-output').style.display = 'block';
-      document.getElementById('ai-area').querySelector('p').style.display = 'none';
-      document.getElementById('gen-btn').style.display = 'none';
-    } catch(e) { alert('Error generating summary. Please try again.'); }
-    btn.textContent = 'Generate summary →'; btn.disabled = false;
   }
   initRatings();
 </script>
