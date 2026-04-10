@@ -23,6 +23,10 @@
   .star { width: 32px; height: 32px; cursor: pointer; border-radius: 50%; border: 1px solid #ddd; background: #f5f5f3; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ccc; user-select: none; transition: background 0.1s; }
   .star.active { background: #fde68a; border-color: #f59e0b; color: #92400e; }
   .star:hover { background: #eee; }
+  .na-toggle { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .na-toggle input { accent-color: #888; }
+  .na-toggle label { font-size: 12px; color: #888; cursor: pointer; }
+  .rating-row.na .stars .star { opacity: 0.25; pointer-events: none; }
   textarea { width: 100%; min-height: 90px; resize: vertical; font-size: 14px; font-family: inherit; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafaf9; color: #1a1a1a; }
   textarea:focus { outline: none; border-color: #3b82f6; }
   select { width: 100%; font-size: 15px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafaf9; color: #1a1a1a; }
@@ -68,7 +72,7 @@
       <p style="font-size:12px;color:#888;margin-bottom:8px;">What's working well? Where could your CoS have more impact?</p>
       <textarea id="comments" placeholder="Your thoughts here..."></textarea>
     </div>
-    <div id="submit-error" class="error" style="display:none;margin-bottom:8px;">Please rate all areas before submitting.</div>
+    <div id="submit-error" class="error" style="display:none;margin-bottom:8px;">Please rate each area or mark it N/A before submitting.</div>
     <button class="btn btn-primary" id="submit-btn" onclick="submitSurvey()" style="width:100%;padding:12px;">Submit feedback</button>
   </div>
   <div id="thanks-page" class="page">
@@ -152,7 +156,9 @@
       currentRatings[area.id] = 0;
       const row = document.createElement('div');
       row.className = 'rating-row';
-      row.innerHTML = `<div class="rating-label">${area.label}<span>${area.desc}</span></div>
+      row.innerHTML = `<div class="rating-label">${area.label}<span>${area.desc}</span>
+          <div class="na-toggle"><input type="checkbox" id="na-${area.id}" onchange="toggleNA('${area.id}')"><label for="na-${area.id}">N/A — haven't worked together on this</label></div>
+        </div>
         <div class="stars" id="stars-${area.id}">${[1,2,3,4,5].map(i =>
           `<div class="star" data-val="${i}" onclick="setRating('${area.id}',${i})">★</div>`).join('')}</div>`;
       c.appendChild(row);
@@ -163,6 +169,22 @@
     document.querySelectorAll(`#stars-${id} .star`).forEach(s => {
       s.classList.toggle('active', parseInt(s.dataset.val) <= val);
     });
+    // uncheck N/A if they click a star
+    document.getElementById(`na-${id}`).checked = false;
+    document.getElementById(`stars-${id}`).closest('.rating-row').classList.remove('na');
+  }
+  function toggleNA(id) {
+    const checked = document.getElementById(`na-${id}`).checked;
+    const row = document.getElementById(`stars-${id}`).closest('.rating-row');
+    if (checked) {
+      currentRatings[id] = -1; // -1 = N/A
+      row.classList.add('na');
+    } else {
+      currentRatings[id] = 0;
+      row.classList.remove('na');
+      // reset stars visually
+      document.querySelectorAll(`#stars-${id} .star`).forEach(s => s.classList.remove('active'));
+    }
   }
   function onDirectorChange() {
     const name = document.getElementById('director-select').value;
@@ -179,15 +201,19 @@
     const name = document.getElementById('director-select').value;
     if (!name) { document.getElementById('name-error').style.display = 'block'; return; }
     document.getElementById('name-error').style.display = 'none';
-    if (AREAS.some(a => !currentRatings[a.id])) { document.getElementById('submit-error').style.display = 'block'; return; }
+    // 0 = untouched (not rated, not N/A). Block those.
+    if (AREAS.some(a => currentRatings[a.id] === 0)) { document.getElementById('submit-error').style.display = 'block'; return; }
     document.getElementById('submit-error').style.display = 'none';
+    // Build ratings object: include rated areas, exclude N/A (-1)
+    const ratingsToSend = {};
+    AREAS.forEach(a => { if (currentRatings[a.id] > 0) ratingsToSend[a.id] = currentRatings[a.id]; });
     const btn = document.getElementById('submit-btn');
     btn.textContent = 'Submitting...'; btn.disabled = true;
     try {
       await supabaseFetch('responses', {
         method: 'POST',
         prefer: 'return=minimal',
-        body: JSON.stringify({ name, ratings: currentRatings, comments: document.getElementById('comments').value.trim() })
+        body: JSON.stringify({ name, ratings: ratingsToSend, comments: document.getElementById('comments').value.trim() })
       });
       showPage('thanks-page');
     } catch(e) {
