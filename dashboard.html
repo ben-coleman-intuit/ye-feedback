@@ -142,11 +142,18 @@
       return;
     }
     const totals = {};
-    AREAS.forEach(a => totals[a.id] = 0);
-    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
+    const counts = {};
+    AREAS.forEach(a => { totals[a.id] = 0; counts[a.id] = 0; });
+    responses.forEach(r => AREAS.forEach(a => {
+      if (r.ratings[a.id] && r.ratings[a.id] > 0) {
+        totals[a.id] += r.ratings[a.id];
+        counts[a.id]++;
+      }
+    }));
     const avgs = {};
-    AREAS.forEach(a => avgs[a.id] = totals[a.id] / responses.length);
-    const overall = Object.values(avgs).reduce((s,v) => s+v, 0) / AREAS.length;
+    AREAS.forEach(a => avgs[a.id] = counts[a.id] ? totals[a.id] / counts[a.id] : 0);
+    const ratedAreas = AREAS.filter(a => counts[a.id] > 0);
+    const overall = ratedAreas.length ? ratedAreas.reduce((s,a) => s + avgs[a.id], 0) / ratedAreas.length : 0;
     document.getElementById('d-avg').textContent = overall.toFixed(1) + ' / 5';
     const top = AREAS.reduce((b,a) => avgs[a.id] > avgs[b.id] ? a : b, AREAS[0]);
     document.getElementById('d-top').textContent = top.label.split(' ').slice(0,2).join(' ');
@@ -155,7 +162,7 @@
       const col = avg >= 4 ? '#16a34a' : avg >= 3 ? '#d97706' : '#dc2626';
       return `<div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-          <span>${a.label}</span><span style="font-weight:600">${avg.toFixed(1)}</span>
+          <span>${a.label} <span style="color:#aaa;font-weight:400">(${counts[a.id]}/${responses.length})</span></span><span style="font-weight:600">${counts[a.id] ? avg.toFixed(1) : 'N/A'}</span>
         </div>
         <div style="height:6px;background:#f0f0ee;border-radius:99px;overflow:hidden;">
           <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;"></div>
@@ -168,7 +175,7 @@
           <span style="font-size:14px;font-weight:600">${r.name}</span>
           <span style="font-size:12px;color:#888">${date}</span>
         </div>
-        <div style="margin-bottom:${r.comments?'8px':'0'}">${AREAS.map(a=>`<span class="tag">${a.label.split(' ').slice(0,2).join(' ')}: ${r.ratings[a.id]||'—'}/5</span>`).join('')}</div>
+        <div style="margin-bottom:${r.comments?'8px':'0'}">${AREAS.map(a=>`<span class="tag">${a.label.split(' ').slice(0,2).join(' ')}: ${r.ratings[a.id] ? r.ratings[a.id]+'/5' : 'N/A'}</span>`).join('')}</div>
         ${r.comments?`<p style="font-size:13px;color:#666;border-top:1px solid #e5e5e3;padding-top:8px;margin-top:0">"${r.comments}"</p>`:''}
       </div>`;
     }).join('');
@@ -182,10 +189,16 @@
     catch(e) { alert('Could not load responses: ' + e.message); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
     if (!responses.length) { alert('No responses yet.'); btn.textContent = 'Generate summary →'; btn.disabled = false; return; }
     const totals = {};
-    AREAS.forEach(a => totals[a.id] = 0);
-    responses.forEach(r => AREAS.forEach(a => totals[a.id] += (r.ratings[a.id] || 0)));
+    const counts = {};
+    AREAS.forEach(a => { totals[a.id] = 0; counts[a.id] = 0; });
+    responses.forEach(r => AREAS.forEach(a => {
+      if (r.ratings[a.id] && r.ratings[a.id] > 0) {
+        totals[a.id] += r.ratings[a.id];
+        counts[a.id]++;
+      }
+    }));
     const avgs = {};
-    AREAS.forEach(a => avgs[a.id] = (totals[a.id]/responses.length).toFixed(1));
+    AREAS.forEach(a => avgs[a.id] = counts[a.id] ? (totals[a.id]/counts[a.id]).toFixed(1) : 'N/A');
     const comments = responses.filter(r => r.comments).map(r => `- ${r.name}: "${r.comments}"`).join('\n');
     const prompt = `You are summarizing Risk SLT peer feedback on a Chief of Staff at Intuit. Write a concise 3-4 sentence summary for her manager. Be specific, use the data, mention standout strengths and any areas to watch. Use third person ("she/her").\n\nResponses: ${responses.length} of 7 directors\nAverage ratings (out of 5):\n${AREAS.map(a=>`- ${a.label}: ${avgs[a.id]}`).join('\n')}\n\nComments:\n${comments||'None provided.'}\n\nKeep it under 120 words. Professional but warm tone.`;
     try {
